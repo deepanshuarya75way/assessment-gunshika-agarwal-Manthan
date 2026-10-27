@@ -4,7 +4,7 @@ import type { Customer } from "../context/OrbitContext";
 import { 
   X, TrendingDown, TrendingUp, Minus, ShoppingBag, Cpu, 
   Search, SlidersHorizontal, Eye, Compass, ZoomIn, ZoomOut,
-  ChevronLeft, ChevronRight, ArrowUpDown, List
+  ChevronLeft, ChevronRight, ArrowUpDown, List, Plus, Tag, StickyNote, Trash2
 } from "lucide-react";
 import { PageHeaderHUD } from "../components/PageHeaderHUD";
 import { AgentCardModal } from "../components/AgentCardModal";
@@ -55,6 +55,25 @@ export const CustomerGalaxy: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<"Drishti" | "Khoj" | "Rachna" | "Saarthi" | "Pragya" | null>(null);
   const [viewMode, setViewMode] = useState<"galaxy" | "list">("galaxy");
   const [showCrmFilters, setShowCrmFilters] = useState(false);
+  type customerNote = {
+    id: string;
+    text: string;
+    createdAt: string;
+  };
+  const [CustomerMeta, setCustomerMeta] =
+  useState<Record <string, { tags: string[]; notes: CustomerNote[]}
+  >(() => {
+    try{
+      return JSON.parse(
+        localStorage.getItem("manthan_customer_notes_tags")|| "{}"
+      );
+    }catch{
+      return {};
+    }
+
+  });
+  const [tagInput, setTagInput] = useState("");
+  const [noteInput, ]
 
   const isLight = theme === "executive";
 
