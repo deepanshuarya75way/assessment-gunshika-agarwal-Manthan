@@ -1270,14 +1270,54 @@ export const CustomerGalaxy: React.FC = () => {
               ))}
             </div>
           </div>
-
           <section className="space-y-3 rounded-xl border border-white/10 bg-slate-950/50 p-3">
           <div className="flex items-center gap-2">
-          <tag size ={13} className="text-manthan-purple"></tag>
-          <span className="font-mono text-[10px] font-bold uppercase text-white">
-           Notes & Tags </span></div>
-          <div class
-
+            <Tag size ={13}
+            className="text-manthan-purple"/>
+            <span classname="font-mono text-[10px] font-bold uppercase text white">
+              Notes & Tags
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {selectedMeta.tags.map(tag =>(
+              <button key = {tag} title="Remove tag" onClick={() => {
+                saveCustomerMeta({
+                  ...customerMeta,
+                  [selected.id]:{
+                    ...selectedMeta,
+                    tags:
+                    selectedMeta.tags.filter(t=> t!== tag)
+                  }
+                });
+                setMetaError("");
+              }} className="rounded-full border border-Manthan-purple/30 bg-Manthan-purple/10 px-2
+              py-1 text=[10px] text-manthan-purple">
+                <div id={tag}></div>
+              </button>
+            ))}
+            {selectedMeta.tags.length === 0 && (
+              <span classname = "text-[10px] text-gray-500">
+                No tags yet</span>
+            )}
+          </div>
+          <form classname="flex gap-1.5"
+          onSubmit = {e => {
+            e.preventDefault();
+            addCustomerTag();
+          }}>
+            <input value = {tagInput} onChange={e=>
+              setTagInput(e.target.value)
+            }
+            maxLength={40}
+            placeholder="Add a tag..."
+            className='min w-0 flex-1 rounded-lg border border-white/10
+            bg-slate-900 px-2 py-1.5 text-xs text-white'></input>
+            <button type = "submit"
+            aria-label="ADD tag"
+            className="rounded-lg bg-Manthan-purple px-2 text-white">
+              <plus size={14}></plus></button>
+          </form>
+    
           </section>
 
           {/* Purchase History */}
