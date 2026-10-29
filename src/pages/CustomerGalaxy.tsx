@@ -4,10 +4,11 @@ import type { Customer } from "../context/OrbitContext";
 import { 
   X, TrendingDown, TrendingUp, Minus, ShoppingBag, Cpu, 
   Search, SlidersHorizontal, Eye, Compass, ZoomIn, ZoomOut,
-  ChevronLeft, ChevronRight, ArrowUpDown, List
+  ChevronLeft, ChevronRight, ArrowUpDown, List, Plus, Tag, StickyNote, Trash2
 } from "lucide-react";
 import { PageHeaderHUD } from "../components/PageHeaderHUD";
 import { AgentCardModal } from "../components/AgentCardModal";
+import type { text } from "stream/consumers";
 
 /* ─────────────────────────────────────────────────────────────
    HELPERS & DUST GENERATOR
@@ -55,6 +56,113 @@ export const CustomerGalaxy: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<"Drishti" | "Khoj" | "Rachna" | "Saarthi" | "Pragya" | null>(null);
   const [viewMode, setViewMode] = useState<"galaxy" | "list">("galaxy");
   const [showCrmFilters, setShowCrmFilters] = useState(false);
+  type CustomerNote = {
+    id: string;
+    text : string;
+    createdAt: string;
+  };
+  const [customerMeta, setCustomerMeta] = 
+  useState<
+  Record<string, {tags: string[]; notes: CustomerNote[]}>
+  >(()=> {
+    try{
+      return JSON.parse(
+        localStorage.getItem("manthan_customer_notes_tags") || "{}"
+      );
+    }catch {
+      return {};
+    }
+  });
+
+  const [tagInput, setTagInput] =
+  useState("");
+  const [noteInput, setNoteInput]=
+  useState("");
+  const [metaError, setMetaError]=
+  useState("");
+  const [activeTagFilter, setActiveTagFilter]=
+  useState("");
+  const saveCustomerMeta=(
+    next: typeof customerMeta
+  ) => {
+    setCustomerMeta(next);
+    localStorage.setItem(
+      "manthan_customer_notes_tags",
+      JSOB.stringify(next)
+    );
+  };
+  const selectedMeta = selected
+  ? customerMeta[selected.id] || {tags:
+    [], notes: []}
+    : { tags: [], notes: [] 
+
+      };
+  const addCustomerTag = () => {
+    if(
+      !selected ||
+      !customers.some( c=> c.id ===
+        selected.id
+      )
+    ){
+      setMetaError("This customer no longer exists.");
+      return;
+    }
+    const tag =
+    tagInput.trim().toLowerCase();
+    if(!tag){
+      setTagInput("");
+      return;
+    }
+    if(selectedMeta.tags.length >= 10){
+      setMetaError ("A customer can have at most 10 tags.");
+      return;
+    }
+    saveCustomerMeta({
+      ...customerMeta,
+      [selected.id]: {
+        ...selectedMeta,
+        tags: [...selectedMeta.tags, tag]
+      }
+    });
+    setTagInput("");
+    setMetaError("");
+  };
+  const addCustomerNote =() =>{
+    if (
+      !selected ||
+      !customers.some(c => c.id ===
+        selected.id)
+    ){
+      setMetaError("This customer is no longer exists");
+      return;
+    }
+    const text = noteInput.trim();
+    if (!text) return;
+    if(text.length > 1000){
+      setMetaError("notes must be 1000 chars");
+      return;
+    }
+    const notes = [
+      {
+        id: `${Date.now()}-$
+        {Math.random().toString(36).slide(2)}`,
+        text,
+        createdAt: new Date().toISOString()
+      },
+      ...selectedMeta.notes
+    ];
+    saveCustomerMeta({
+      ...customerMeta,
+      [selected.id]: {
+        ...selectedMeta,
+        notes
+      }
+    });
+    setNoteInput("");
+    setMetaError("");
+  };
+
+
 
   const isLight = theme === "executive";
 
@@ -130,6 +238,13 @@ export const CustomerGalaxy: React.FC = () => {
     if (c.ltv < minLtv) return false;
     if (c.churnRisk > maxChurnRisk) return false;
     if (preferredChannel !== "All" && c.preferredChannel !== preferredChannel) return false;
+    if(
+      activeTagFilter &&
+      !(customerMeta[c.id]?.tags ||
+        []).includes(activeTagFilter)
+    ){
+      return false;
+    }
     return true;
   });
 
@@ -176,7 +291,7 @@ export const CustomerGalaxy: React.FC = () => {
   // Sync pagination reset when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedSegments, minLtv, maxChurnRisk, preferredChannel, searchQuery]);
+  }, [selectedSegments, minLtv, maxChurnRisk, preferredChannel, searchQuery, activeTagFilter]);
 
   /* Search Auto-Focus */
   const handleSelectCustomer = (cust: Customer) => {
@@ -647,7 +762,49 @@ export const CustomerGalaxy: React.FC = () => {
             className={`w-full accent-red-500 h-1 rounded-full border-none cursor-pointer ${isLight ? "bg-gray-200" : "bg-gray-900"}`}
           />
         </div>
+      <div classsname="space-y-2">
+        <label
+        classname={`font-mono text - [9px]
+        uppercase tracking-wider block ${
+          isLight ? "text-gray-500": 
+          "text-gray-400"
+        }`}
+      >
+        Filter by customer tag
+      </label>
+      <div className="flex flex-wrap gap-1.5">
+        <button on onClick={()=>
+          setActiveTagFilter("")
+        }
+        classname="rounded-full border px-2 py-1 text-[10px}">
+          All tags</button>
+          {[...new Set(
+            Object.values(customerMeta).flatMap(meta =>
+              meta.tags
+            )
+          )].sort().map(tag=>(
+            <button
+            key={tag}
+            onClick={() =>
+              setActiveTagFilter(
+                activeTagFilter === tag ?
+                "" : tag
+              )
+            }
+            className={`rounded-full border 
+            px-2 py-1 text-[10px] $
+              activeTagFilter === tag
+              ? "border-purple-500 bg-purple-500/10 text-purple-500"
+              : "border-gray-700
+              text-gray-500"
+              }`}
+            >
+            #{tag}
+            </button>
+          ))}
+          </div>
 
+      </div>
         {/* Preferred Channel Dropdown */}
         <div className="space-y-1.5">
           <label className={`font-mono text-[9px] uppercase tracking-wider block ${isLight ? "text-gray-500" : "text-gray-400"}`}>Communication Node</label>
@@ -1113,6 +1270,15 @@ export const CustomerGalaxy: React.FC = () => {
               ))}
             </div>
           </div>
+
+          <section className="space-y-3 rounded-xl border border-white/10 bg-slate-950/50 p-3">
+          <div className="flex items-center gap-2">
+          <tag size ={13} className="text-manthan-purple"></tag>
+          <span className="font-mono text-[10px] font-bold uppercase text-white">
+           Notes & Tags </span></div>
+          <div class
+
+          </section>
 
           {/* Purchase History */}
           <div className="space-y-2">
