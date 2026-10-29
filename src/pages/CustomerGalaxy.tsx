@@ -1270,55 +1270,147 @@ export const CustomerGalaxy: React.FC = () => {
               ))}
             </div>
           </div>
-          <section className="space-y-3 rounded-xl border border-white/10 bg-slate-950/50 p-3">
-          <div className="flex items-center gap-2">
-            <Tag size ={13}
-            className="text-manthan-purple"/>
-            <span classname="font-mono text-[10px] font-bold uppercase text white">
-              Notes & Tags
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {selectedMeta.tags.map(tag =>(
-              <button key = {tag} title="Remove tag" onClick={() => {
-                saveCustomerMeta({
-                  ...customerMeta,
-                  [selected.id]:{
-                    ...selectedMeta,
-                    tags:
-                    selectedMeta.tags.filter(t=> t!== tag)
-                  }
-                });
-                setMetaError("");
-              }} className="rounded-full border border-Manthan-purple/30 bg-Manthan-purple/10 px-2
-              py-1 text=[10px] text-manthan-purple">
-                <div id={tag}></div>
-              </button>
-            ))}
-            {selectedMeta.tags.length === 0 && (
-              <span classname = "text-[10px] text-gray-500">
-                No tags yet</span>
-            )}
-          </div>
-          <form classname="flex gap-1.5"
-          onSubmit = {e => {
-            e.preventDefault();
-            addCustomerTag();
-          }}>
-            <input value = {tagInput} onChange={e=>
-              setTagInput(e.target.value)
+          {/* Customer Notes & Tags */}
+<section className="space-y-3 rounded-xl border border-white/10 bg-slate-950/50 p-3">
+  <div className="flex items-center gap-2">
+    <Tag size={13} className="text-Manthan-purple" />
+    <span className="font-mono text-[10px] font-bold uppercase text-white">
+      Notes & Tags
+    </span>
+  </div>
+
+  <div className="flex flex-wrap gap-1.5">
+    {selectedMeta.tags.map(tag => (
+      <button
+        key={tag}
+        title="Remove tag"
+        onClick={() => {
+          saveCustomerMeta({
+            ...customerMeta,
+            [selected.id]: {
+              ...selectedMeta,
+              tags: selectedMeta.tags.filter(t => t !== tag)
             }
-            maxLength={40}
-            placeholder="Add a tag..."
-            className='min w-0 flex-1 rounded-lg border border-white/10
-            bg-slate-900 px-2 py-1.5 text-xs text-white'></input>
-            <button type = "submit"
-            aria-label="ADD tag"
-            className="rounded-lg bg-Manthan-purple px-2 text-white">
-              <plus size={14}></plus></button>
-          </form>
-    
-          </section>
+          });
+          setMetaError("");
+        }}
+        className="rounded-full border border-Manthan-purple/30 bg-Manthan-purple/10 px-2 py-1 text-[10px] text-Manthan-purple"
+      >
+        #{tag} ×
+      </button>
+    ))}
+
+    {selectedMeta.tags.length === 0 && (
+      <span className="text-[10px] text-gray-500">
+        No tags yet
+      </span>
+    )}
+  </div>
+
+  <form
+    className="flex gap-1.5"
+    onSubmit={e => {
+      e.preventDefault();
+      addCustomerTag();
+    }}
+  >
+    <input
+      value={tagInput}
+      onChange={e => setTagInput(e.target.value)}
+      maxLength={40}
+      placeholder="Add a tag..."
+      className="min-w-0 flex-1 rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-xs text-white"
+    />
+
+    <button
+      type="submit"
+      aria-label="Add tag"
+      className="rounded-lg bg-Manthan-purple px-2 text-white"
+    >
+      <Plus size={14} />
+    </button>
+  </form>
+
+  <div className="flex items-center gap-2 pt-1">
+    <StickyNote size={13} className="text-Manthan-blue" />
+    <span className="font-mono text-[10px] font-bold uppercase text-white">
+      Customer notes
+    </span>
+  </div>
+
+  <textarea
+    value={noteInput}
+    onChange={e => setNoteInput(e.target.value)}
+    maxLength={1000}
+    rows={3}
+    placeholder="Write a note (max 1,000 characters)..."
+    className="w-full resize-y rounded-lg border border-white/10 bg-slate-900 p-2 text-xs text-white"
+  />
+
+  <div className="flex items-center justify-between">
+    <span className="text-[9px] text-gray-500">
+      {noteInput.length}/1000
+    </span>
+
+    <button
+      type="button"
+      onClick={addCustomerNote}
+      className="rounded-lg bg-Manthan-blue px-3 py-1.5 text-[10px] font-bold text-white"
+    >
+      Add note
+    </button>
+  </div>
+
+  {metaError && (
+    <p role="alert" className="text-[10px] text-red-500">
+      {metaError}
+    </p>
+  )}
+
+  <div className="max-h-48 space-y-2 overflow-y-auto">
+    {selectedMeta.notes.map(note => (
+      <article
+        key={note.id}
+        className="rounded-lg border border-white/10 bg-slate-900 p-2"
+      >
+        <div className="mb-1 flex items-start justify-between gap-2">
+          <time className="text-[9px] text-gray-500">
+            {new Date(note.createdAt).toLocaleString()}
+          </time>
+
+          <button
+            type="button"
+            aria-label="Delete note"
+            onClick={() =>
+              saveCustomerMeta({
+                ...customerMeta,
+                [selected.id]: {
+                  ...selectedMeta,
+                  notes: selectedMeta.notes.filter(
+                    n => n.id !== note.id
+                  )
+                }
+              })
+            }
+            className="text-red-400"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+
+        <p className="whitespace-pre-wrap break-words text-xs text-gray-200">
+          {note.text}
+        </p>
+      </article>
+    ))}
+
+    {selectedMeta.notes.length === 0 && (
+      <p className="text-[10px] text-gray-500">
+        No notes yet.
+      </p>
+    )}
+  </div>
+</section>
 
           {/* Purchase History */}
           <div className="space-y-2">
